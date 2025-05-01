@@ -8,4 +8,5 @@ export interface Article {
     url: string;
     author?: string;
     category?: string;
+    videoUrl?: string;
   }

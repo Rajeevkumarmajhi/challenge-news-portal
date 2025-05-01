@@ -1,17 +1,23 @@
 import axios from 'axios';
 import { Article } from '@/types/Article';
 
-
 // Define your API key and endpoint
 const NEWS_API_KEY = import.meta.env.VITE_NEWS_API_KEY;
-const NEWS_API_ENDPOINT = 'https://newsapi.org/v2/top-headlines';
+const NEWS_API_ENDPOINT = 'https://newsapi.org/v2/everything'; // switched from top-headlines to everything for date filtering
 
-export const fetchNewsApiArticles = async (query: string = ''): Promise<Article[]> => {
+export const fetchNewsApiArticles = async (
+  query: string = '',
+  fromDate?: string,
+  toDate?: string
+): Promise<Article[]> => {
   try {
     const response = await axios.get(NEWS_API_ENDPOINT, {
       params: {
         q: query || 'news',
-        pageSize: 10,
+        from: fromDate,
+        to: toDate,
+        sortBy: 'publishedAt',
+        pageSize: 20,
         language: 'en',
         apiKey: NEWS_API_KEY,
       },
@@ -29,6 +35,7 @@ export const fetchNewsApiArticles = async (query: string = ''): Promise<Article[
       url: item.url,
       author: item.author || 'Unknown',
       category: item.source?.name || 'General',
+      videoUrl: item.urlToImage?.endsWith('.mp4') ? item.urlToImage : undefined,
     }));
   } catch (error) {
     console.error('Failed to fetch NewsAPI articles:', error);

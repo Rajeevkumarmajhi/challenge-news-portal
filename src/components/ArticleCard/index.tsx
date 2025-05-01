@@ -9,11 +9,27 @@ interface ArticleCardProps {
 const ArticleCard: React.FC<ArticleCardProps> = ({ article }) => {
   return (
     <div className="border rounded p-4 shadow hover:shadow-lg transition">
-      <img
-        src={article.imageUrl}
-        alt={article.title}
-        className="w-full h-48 object-cover rounded"
-      />
+      {article.videoUrl ? (
+        <video
+          controls
+          poster={article.imageUrl}
+          className="w-full h-48 object-cover rounded"
+        >
+          <source src={article.videoUrl} type="video/mp4" />
+          Your browser does not support the video tag.
+        </video>
+      ) : article.imageUrl ? (
+        <img
+          src={article.imageUrl}
+          alt={article.title}
+          className="w-full h-48 object-cover rounded"
+        />
+      ) : (
+        <div className="w-full h-48 bg-gray-200 flex items-center justify-center rounded">
+          <span className="text-sm text-gray-500">No media available</span>
+        </div>
+      )}
+
       <h2 className="text-xl font-bold mt-2">{article.title}</h2>
       <p className="text-gray-600 text-sm">
         {new Date(article.publishedAt).toLocaleString()}

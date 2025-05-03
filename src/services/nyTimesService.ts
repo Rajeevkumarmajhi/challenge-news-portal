@@ -8,14 +8,25 @@ export const fetchNYTimesArticles = async (
   searchTerm: string = '',
   fromDate?: string,
   toDate?: string,
+  category?: string,
   page: number = 1,
   pageSize: number = 5
 ): Promise<Article[]> => {
   try {
+    const params: Record<string, any> = {
+      'api-key': NYT_API_KEY,
+      'q': searchTerm,  // Pass search term to the API query
+      'page': page.toString(),
+      'page-size': pageSize.toString(),
+    };
+
+    // Optional: Add fromDate and toDate if provided
+    if (fromDate) params['begin_date'] = fromDate;
+    if (toDate) params['end_date'] = toDate;
+    if (category) params['section'] = category;
+
     const response = await axios.get(NYT_API_URL, {
-      params: {
-        'api-key': NYT_API_KEY,
-      },
+      params,
     });
 
     const articles = response.data.results;

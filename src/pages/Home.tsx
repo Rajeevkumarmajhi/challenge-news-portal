@@ -156,10 +156,10 @@ const Home = () => {
 	}, [showFilters]);
 
 	return (
-		<div className="px-4 py-6 max-w-screen-2xl mx-auto overflow-x-hidden relative">
+		<div className="px-4 py-6 mx-auto overflow-x-hidden relative">
 			<div className="grid grid-cols-1 gap-6">
 				{/* Filter Panel */}
-				<div className={`grid gap-4 transition-all duration-300 ${showFilters ? 'fixed top-2 left-4 right-4 bg-white p-4 z-50 shadow-lg rounded-md max-w-screen-2xl mx-auto' : 'hidden'}`}>
+				<div className={`grid gap-4 transition-all duration-300 ${showFilters ? 'fixed top-2 left-4 right-4 bg-white p-4 z-50 shadow-lg rounded-md mx-auto' : 'hidden'}`}>
 					{/* Date Filters */}
 					<div>
 						<DateFilter

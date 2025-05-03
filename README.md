@@ -7,7 +7,7 @@ A modern, mobile-responsive news portal web app built using **React**, **TypeScr
 ## 🚀 Features
 
 - 🔍 **Search Articles**: Search across multiple news sources by keyword.
-- 🧭 **Category Filtering**: Filter articles by category.
+- 🧭 **Category Filtering**: Filter articles by category author.
 - 🗓 **Date Range Filtering**: Select a custom date range to load relevant articles.
 - 🌐 **Multiple News Sources**: Aggregates articles from:
   - NewsAPI

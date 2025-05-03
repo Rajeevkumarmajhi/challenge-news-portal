@@ -36,3 +36,48 @@ A modern, mobile-responsive news portal web app built using **React**, **TypeScr
   - **DRY**: Don't Repeat Yourself
   - **KISS**: Keep It Simple, Stupid
   - **SOLID**: Single Responsibility, Open/Closed, Liskov, Interface Segregation, Dependency Inversion
+
+## 🛠️ Installation and Running Locally
+
+### 1. Clone the Repository
+
+```bash
+git clone https://github.com/your-repo/news-portal-challenge.git
+cd news-portal-challenge
+
+### 2. Install Dependencies
+
+Make sure you have **Node.js** and **npm** installed. Then, run:
+
+```bash
+npm install
+
+
+### 3. Run the Application
+...bash
+npm run dev
+
+
+## 🐳 Running the App with Docker
+
+### 1. Build Docker Image
+
+To build the Docker image, run:
+
+```bash
+docker build -t my-react-app .
+
+### 2. Run Docker Container
+
+After building the image, you can run the app in a Docker container:
+
+```bash
+docker run -d -p 80:80 --name my-react-app-container my-react-app
+
+You can copy and paste this directly into your GitHub README. Let me know if this works!
+
+
+## 💡 Demo
+
+You can view the live demo of the application at:  
+[https://news.rajeevkumarmajhi.com.np](https://news.rajeevkumarmajhi.com.np)

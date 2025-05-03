@@ -61,7 +61,7 @@ const Home = () => {
 			const [newsApi, guardian, nyTimes] = await Promise.all([
 				fetchNewsApiArticles(term, from, to, "", pageNumber, PAGE_SIZE),
 				fetchGuardianArticles(term, from, to, "", pageNumber, PAGE_SIZE),
-				fetchNYTimesArticles(term, from, to, pageNumber, PAGE_SIZE),
+				fetchNYTimesArticles(term, from, to,"", pageNumber, PAGE_SIZE),
 			]);
 
 			let merged = [...newsApi, ...guardian, ...nyTimes];
@@ -87,7 +87,7 @@ const Home = () => {
 			const [nextNewsApi, nextGuardian, nextNyTimes] = await Promise.all([
 				fetchNewsApiArticles(term, from, to, "", nextPage, PAGE_SIZE),
 				fetchGuardianArticles(term, from, to, "", nextPage, PAGE_SIZE),
-				fetchNYTimesArticles(term, from, to, nextPage, PAGE_SIZE),
+				fetchNYTimesArticles(term, from, to,"", nextPage, PAGE_SIZE),
 			]);
 
 			let nextMerged = [...nextNewsApi, ...nextGuardian, ...nextNyTimes];

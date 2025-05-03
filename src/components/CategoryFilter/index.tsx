@@ -6,26 +6,28 @@ interface CategoryFilterProps {
   onChange: (category: string) => void;
 }
 
-const CategoryFilter: React.FC<CategoryFilterProps> = ({ categories, selectedCategory, onChange }) => {
+const CategoryFilter: React.FC<CategoryFilterProps> = ({
+  categories,
+  selectedCategory,
+  onChange,
+}) => {
   return (
-    <div className="flex gap-4 flex-wrap mt-4 mb-2">
-      <button
-        className={`px-4 py-2 rounded ${selectedCategory === '' ? 'bg-blue-600 text-white' : 'bg-gray-200'}`}
-        onClick={() => onChange('')}
-      >
-        All
-      </button>
-      {categories.map((cat) => (
-        <button
-          key={cat}
-          className={`px-4 py-2 rounded ${
-            selectedCategory === cat ? 'bg-blue-600 text-white' : 'bg-gray-200'
-          }`}
-          onClick={() => onChange(cat)}
-        >
-          {cat}
-        </button>
-      ))}
+    <div className="overflow-x-auto">
+      <div className="flex gap-2 mb-4 whitespace-nowrap">
+        {categories.map((category: string) => (
+          <button
+            key={category}
+            className={`px-4 py-2 rounded-full border shrink-0 ${
+              selectedCategory === category
+                ? 'bg-blue-500 text-white'
+                : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+            }`}
+            onClick={() => onChange(category)}
+          >
+            {category}
+          </button>
+        ))}
+      </div>
     </div>
   );
 };

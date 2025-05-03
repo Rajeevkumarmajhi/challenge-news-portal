@@ -1,4 +1,6 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import flatpickr from "flatpickr";
+import "flatpickr/dist/flatpickr.min.css";
 
 interface DateFilterProps {
   fromDate: string;
@@ -8,26 +10,66 @@ interface DateFilterProps {
 }
 
 const DateFilter: React.FC<DateFilterProps> = ({ fromDate, toDate, onFromChange, onToChange }) => {
+
+  const [selectedFromDate, setSelectedFromDate] = useState(fromDate);
+  const [selectedToDate, setSelectedToDate] = useState(toDate);
+
+  useEffect(() => {
+    const fromDatePicker = flatpickr(".from-date", {
+      dateFormat: "Y-m-d",
+      onChange: (selectedDates) => {
+        const date = selectedDates[0];
+        setSelectedFromDate(date.toLocaleDateString('en-CA'));
+        onFromChange(date.toLocaleDateString('en-CA'));
+      },
+    });
+
+    const toDatePicker = flatpickr(".to-date", {
+      dateFormat: "Y-m-d",
+      onChange: (selectedDates) => {
+        const date = selectedDates[0];
+        setSelectedToDate(date.toLocaleDateString('en-CA'));
+        onToChange(date.toLocaleDateString('en-CA'));
+      },
+    });
+
+    return () => {
+      if (Array.isArray(fromDatePicker)) {
+        fromDatePicker.forEach((instance) => instance.destroy());
+      } else {
+        fromDatePicker.destroy();
+      }
+
+      if (Array.isArray(toDatePicker)) {
+        toDatePicker.forEach((instance) => instance.destroy());
+      } else {
+        toDatePicker.destroy();
+      }
+    };
+  }, []);
+
   return (
-    <div className="flex gap-4 flex-wrap items-center my-4">
-      <label className="flex flex-col text-sm">
-        From:
+    <div className="flex space-x-4 mb-4">
+      <div>
+        <label htmlFor="fromDate" className="block text-sm font-medium text-gray-700">From Date</label>
         <input
-          type="date"
-          value={fromDate}
+          type="text"
+          id="fromDate"
+          value={selectedFromDate}
           onChange={(e) => onFromChange(e.target.value)}
-          className="border px-2 py-1 rounded"
+          className="from-date mt-1 block w-full px-4 py-2 rounded-md border border-gray-300 focus:ring-blue-500 focus:border-blue-500"
         />
-      </label>
-      <label className="flex flex-col text-sm">
-        To:
+      </div>
+      <div>
+        <label htmlFor="toDate" className="block text-sm font-medium text-gray-700">To Date</label>
         <input
-          type="date"
-          value={toDate}
-          onChange={(e) => onToChange(e.target.value)}
-          className="border px-2 py-1 rounded"
+          type="text"
+          id="toDate"
+          value={selectedToDate}
+          onChange={(e) => onFromChange(e.target.value)}
+          className="to-date mt-1 block w-full px-4 py-2 rounded-md border border-gray-300 focus:ring-blue-500 focus:border-blue-500"
         />
-      </label>
+      </div>
     </div>
   );
 };

@@ -2,141 +2,177 @@ import { useEffect, useState } from "react";
 import { fetchNewsApiArticles } from "@/services/newsApiService";
 import { fetchGuardianArticles } from "@/services/guardianService";
 import { fetchNYTimesArticles } from "@/services/nyTimesService";
+
 import { Article } from "@/types/Article";
 import SearchBar from "@/components/SearchBar";
 import ArticleCard from "@/components/ArticleCard";
 import CategoryFilter from "@/components/CategoryFilter";
 import DateFilter from "@/components/DateFilter";
+import SourceFilter from "@/components/SourceFilter";
+import { ClipLoader } from "react-spinners";
+
+const PAGE_SIZE = 20;
 
 const Home = () => {
   const [articles, setArticles] = useState<Article[]>([]);
-  const [filteredArticles, setFilteredArticles] = useState<Article[]>([]);
+  const [categories, setCategories] = useState<string[]>(["All"]);
   const [loading, setLoading] = useState(true);
+  const [isFetchingMore, setIsFetchingMore] = useState(false);
+  const [hasMore, setHasMore] = useState(true);
+
   const [searchTerm, setSearchTerm] = useState("");
+  const [selectedSource, setSelectedSource] = useState<string | null>(null);
   const [selectedCategory, setSelectedCategory] = useState("");
-  const [categories, setCategories] = useState<string[]>([]);
-  const [fromDate, setFromDate] = useState<string>("");
-  const [toDate, setToDate] = useState<string>("");
+  const [fromDate, setFromDate] = useState("");
+  const [toDate, setToDate] = useState("");
+  const [page, setPage] = useState(1);
 
   const loadArticles = async (
-    term: string,
-    from: string = "",
-    to: string = ""
+    append = false,
+    pageNumber = 1,
+    term = searchTerm,
+    from = fromDate,
+    to = toDate,
+    category = selectedCategory,
+    source = selectedSource
   ) => {
     try {
-      setLoading(true);
+      if (!append) {
+        setLoading(true);
+        setPage(1); // Reset page when loading new results
+      } else {
+        setIsFetchingMore(true); // Show loader for more articles
+      }
 
+      // Fetch articles from different sources
       const [newsApi, guardian, nyTimes] = await Promise.all([
-        fetchNewsApiArticles(term, from, to),
-        fetchGuardianArticles(term, from, to),
-        fetchNYTimesArticles(term, from, to),
+        fetchNewsApiArticles(term, from, to, "", pageNumber, PAGE_SIZE),
+        fetchGuardianArticles(term, from, to, "", pageNumber, PAGE_SIZE),
+        fetchNYTimesArticles(term, from, to, pageNumber, PAGE_SIZE),
       ]);
 
-      const mergedArticles = [...newsApi, ...guardian, ...nyTimes];
-      const sortedArticles = mergedArticles.sort(
-        (a, b) =>
-          new Date(b.publishedAt).getTime() -
-          new Date(a.publishedAt).getTime()
+      // Merge all the articles
+      let merged = [...newsApi, ...guardian, ...nyTimes];
+
+      // Apply source filtering if needed
+      if (source) {
+        merged = merged.filter((a) => a.source === source);
+      }
+
+      // Sort articles by published date
+      const sorted = merged.sort(
+        (a, b) => new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime()
       );
 
-      setArticles(sortedArticles);
-      setFilteredArticles(sortedArticles);
+      // Filter by category if any
+      const filtered = category && category !== "All"
+        ? sorted.filter((a) => a.category === category)
+        : sorted;
 
-      const uniqueCategories = Array.from(
-        new Set(
-          sortedArticles
-            .map((a) => a.category)
-            .filter(
-              (cat): cat is string =>
-                typeof cat === "string" && cat.trim() !== ""
-            )
-        )
-      );
-      setCategories(uniqueCategories);
-    } catch (error) {
-      console.error("Error loading articles:", error);
+      // Extract unique categories from the fetched articles
+      const uniqueCategories = ["All", ...Array.from(new Set(merged.map((article) => article.category)))];
+      setCategories(uniqueCategories.filter((category): category is string => category !== undefined && category !== ""));
+
+      // If not appending, reset articles to new ones
+      setArticles((prev) => (append ? [...prev, ...filtered] : filtered));
+
+      // Check if there are more articles to load
+      setHasMore(filtered.length === PAGE_SIZE); // Only show "Load More" if we get a full page
+    } catch (err) {
+      console.error("Failed to load articles:", err);
     } finally {
       setLoading(false);
+      setIsFetchingMore(false);
     }
   };
 
   useEffect(() => {
-    loadArticles(searchTerm, fromDate, toDate);
-  }, []);
+    loadArticles(false, 1); // Load articles when any filter or search term changes
+  }, [searchTerm, selectedSource, selectedCategory, fromDate, toDate, page]);
 
   const handleSearch = (term: string) => {
     setSearchTerm(term);
-    loadArticles(term, fromDate, toDate);
   };
 
   const handleCategoryChange = (category: string) => {
-    setSelectedCategory(category);
-    applyFilters(searchTerm, category, fromDate, toDate);
+    setSelectedCategory(category === "All" ? "All" : category);
   };
 
   const handleDateChange = (from: string, to: string) => {
     setFromDate(from);
     setToDate(to);
-    loadArticles(searchTerm, from, to);
   };
 
-  const applyFilters = (
-    term: string,
-    category: string,
-    from?: string,
-    to?: string
-  ) => {
-    let filtered = [...articles];
-
-    if (term) {
-      const lowerTerm = term.toLowerCase();
-      filtered = filtered.filter(
-        (article) =>
-          article.title.toLowerCase().includes(lowerTerm) ||
-          article.description.toLowerCase().includes(lowerTerm)
-      );
-    }
-
-    if (category) {
-      filtered = filtered.filter((article) => article.category === category);
-    }
-
-    if (from) {
-      const fromTime = new Date(from).getTime();
-      filtered = filtered.filter(
-        (article) => new Date(article.publishedAt).getTime() >= fromTime
-      );
-    }
-    if (to) {
-      const toTime = new Date(to).getTime();
-      filtered = filtered.filter(
-        (article) => new Date(article.publishedAt).getTime() <= toTime
-      );
-    }
-
-    setFilteredArticles(filtered);
+  const handleSourceChange = (source: string) => {
+    setSelectedSource(source);
   };
 
-  if (loading) return <div className="p-4 text-center">Loading...</div>;
+  const handleLoadMore = () => {
+    const nextPage = page + 1; // Increment the page value manually
+    setPage(nextPage); // Update state to reflect the next page
+    loadArticles(true, nextPage); // Load next page
+  };
+
+  // Auto load more when scrolling to the bottom
+  const handleScroll = () => {
+    const bottom = window.innerHeight + document.documentElement.scrollTop === document.documentElement.offsetHeight;
+    if (bottom && hasMore && !isFetchingMore) {
+      handleLoadMore(); // Automatically load more if at the bottom
+    }
+  };
+
+  useEffect(() => {
+    window.addEventListener("scroll", handleScroll);
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+    };
+  }, [hasMore, isFetchingMore]);
 
   return (
     <div className="p-4">
-      <SearchBar onSearch={handleSearch} />
-      <DateFilter
-        fromDate={fromDate}
-        toDate={toDate}
-        onFromChange={(date) => handleDateChange(date, toDate)}
-        onToChange={(date) => handleDateChange(fromDate, date)}
-      />
+      <div className="flex flex-col gap-4 mt-4">
 
-      <CategoryFilter
-        categories={categories}
-        selectedCategory={selectedCategory}
-        onChange={handleCategoryChange}
-      />
-      <div className="grid gap-4 mt-4 md:grid-cols-2 lg:grid-cols-3">
-        {filteredArticles.length > 0 ? (
-          filteredArticles.map((article) => (
+        <div className="flex flex-col md:flex-row md:items-end gap-4">
+          <div className="flex flex-col sm:flex-row gap-4 flex-none">
+            <DateFilter
+              fromDate={fromDate}
+              toDate={toDate}
+              onFromChange={(date) => handleDateChange(date, toDate)}
+              onToChange={(date) => handleDateChange(fromDate, date)}
+            />
+            <SourceFilter
+              selectedSource={selectedSource}
+              onChange={handleSourceChange}
+            />
+          </div>
+
+          {/* SearchBar */}
+          <div className="flex-grow">
+            <SearchBar onSearch={handleSearch} />
+          </div>
+        </div>
+
+
+        {/* Category Filter: always in a separate row */}
+        <div className="overflow-x-auto">
+          <CategoryFilter
+            categories={categories}
+            selectedCategory={selectedCategory}
+            onChange={handleCategoryChange}
+          />
+        </div>
+      </div>
+
+
+      {loading && (
+        <div className="flex justify-center items-center h-64 mt-6">
+          <ClipLoader size={50} color="#4F46E5" />
+        </div>
+      )}
+
+      <div className="grid gap-4 mt-6 md:grid-cols-2 lg:grid-cols-3">
+        {articles.length > 0 ? (
+          articles.map((article) => (
             <ArticleCard key={article.id} article={article} />
           ))
         ) : (
@@ -145,6 +181,19 @@ const Home = () => {
           </p>
         )}
       </div>
+
+      {/* "Load More" Button */}
+      {hasMore && !loading && (
+        <div className="text-center mt-6">
+          <button
+            onClick={handleLoadMore}
+            disabled={isFetchingMore}
+            className="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700"
+          >
+            {isFetchingMore ? "Loading..." : "Load More"}
+          </button>
+        </div>
+      )}
     </div>
   );
 };

@@ -7,7 +7,9 @@ const NYT_API_URL = 'https://api.nytimes.com/svc/topstories/v2/home.json';
 export const fetchNYTimesArticles = async (
   searchTerm: string = '',
   fromDate?: string,
-  toDate?: string
+  toDate?: string,
+  page: number = 1,
+  pageSize: number = 5
 ): Promise<Article[]> => {
   try {
     const response = await axios.get(NYT_API_URL, {
@@ -18,6 +20,7 @@ export const fetchNYTimesArticles = async (
 
     const articles = response.data.results;
 
+    // Filter by search and date range
     const filtered = articles.filter((item: any) => {
       const content = `${item.title} ${item.abstract} ${item.byline}`.toLowerCase();
       const matchesSearch = !searchTerm || content.includes(searchTerm.toLowerCase());
@@ -29,7 +32,11 @@ export const fetchNYTimesArticles = async (
       return matchesSearch && matchesFrom && matchesTo;
     });
 
-    return filtered.map((item: any) => ({
+    // Simulate pagination
+    const startIndex = (page - 1) * pageSize;
+    const paginated = filtered.slice(startIndex, startIndex + pageSize);
+
+    return paginated.map((item: any) => ({
       id: item.url,
       title: item.title,
       description: item.abstract,

@@ -42,7 +42,7 @@ A modern, mobile-responsive news portal web app built using **React**, **TypeScr
 ### 1. Clone the Repository
 
 ```bash
-git clone https://github.com/your-repo/news-portal-challenge.git
+git clone https://github.com/Rajeevkumarmajhi/news-portal-challenge.git
 cd news-portal-challenge
 
 ### 2. Install Dependencies
